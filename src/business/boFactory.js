@@ -1,14 +1,11 @@
 var MailTemplateBO        = require('./mailTemplateBO');
 var UserBO                = require('./userBO');
 var NotificationBO        = require('./notificationBO');
+var TransactionBO         = require('./transactionBO');
+var AddressBO             = require('./addressBO');
 var DAOFactory            = require('../daos/daoFactory');
 var ModelParser           = require('../models/modelParser');
-var JWTHelper             = require('../helpers/jwtHelper');
-var UserHelper            = require('../helpers/userHelper');
-var DynamicTextHelper     = require('../helpers/dynamicTextHelper');
-var StringReplacerHelper  = require('../helpers/stringReplacerHelper');
-var SendMailHelper        = require('../helpers/sendMailHelper');
-var nodemailer            = require('nodemailer');
+var HelperFactory         = require('../helpers/helperFactory');
 
 function factory(dao) {
   switch (dao) {
@@ -16,6 +13,21 @@ function factory(dao) {
       return new MailTemplateBO({
         mailTemplateDAO: DAOFactory.getDAO('mailTemplate'),
         modelParser: new ModelParser()
+      });
+    case 'address':
+      return new AddressBO({
+        addressDAO: DAOFactory.getDAO('address'),
+        modelParser: new ModelParser(),
+        cdalHelper: HelperFactory.getHelper('cdal'),
+        dateHelper: HelperFactory.getHelper('date')
+      });
+    case 'transaction':
+      return new TransactionBO({
+        transactionDAO: DAOFactory.getDAO('transaction'),
+        modelParser: new ModelParser(),
+        cdalHelper: HelperFactory.getHelper('cdal'),
+        dateHelper: HelperFactory.getHelper('date'),
+        addressBO: factory('address')
       });
     case 'notification':
       var modelParser = new ModelParser();
@@ -27,19 +39,17 @@ function factory(dao) {
         }),
         userBO: new UserBO({
           userDAO: DAOFactory.getDAO('user'),
-          jwtHelper: new JWTHelper(),
+          jwtHelper: HelperFactory.getHelper('jwt'),
           modelParser: modelParser,
-          userHelper: new UserHelper()
+          userHelper: HelperFactory.getHelper('user')
         }),
-        dynamicTextHelper: new DynamicTextHelper({
-          stringReplacerHelper: new StringReplacerHelper()
-        }),
-        sendMailHelper: new SendMailHelper(nodemailer),
+        dynamicTextHelper: HelperFactory.getHelper('dynamicText'),
+        sendMailHelper: HelperFactory.getHelper('sendMail'),
       });
     case 'user':
       return new UserBO({
         userDAO: DAOFactory.getDAO('user'),
-        jwtHelper: new JWTHelper(),
+        jwtHelper: HelperFactory.getHelper('jwt'),
         modelParser: new ModelParser(),
         notificationBO: factory('notification')
       });

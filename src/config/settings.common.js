@@ -18,5 +18,8 @@ module.exports = {
           user: 'user',
           pass: 'pass'
       }
+    },
+    cdal: {
+      baseUrl: 'http://localhost:4000/v1'
     }
 };

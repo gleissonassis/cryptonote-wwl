@@ -8,7 +8,11 @@ module.exports = function(app) {
     .get(expressHelper.requireLogin, controller.getAll)
     .post(expressHelper.requireLogin, controller.createAddress);
 
+  app.route('/v1/addresses/balance')
+    .get(expressHelper.requireLogin, controller.getBalance);
+
   app.route('/v1/addresses/:address/balance')
+    .get(expressHelper.requireLogin, controller.getBalance)
     .post(expressHelper.requireLogin, controller.updateBalance);
 
   app.route('/v1/addresses/:address')

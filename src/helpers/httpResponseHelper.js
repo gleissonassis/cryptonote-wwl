@@ -21,7 +21,7 @@ module.exports = function(req, res){
     },
 
     ok: function(r) {
-      if (!r || (r && Array.isArray(r) && r.length === 0)) {
+      if (!r) {
         _status(404, r);
       } else {
         _status(200, r);

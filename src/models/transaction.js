@@ -9,6 +9,10 @@ module.exports = function(){
       type: Number,
       required: true
     },
+    amount: {
+      type: Number,
+      required: true
+    },
     userId: {
       type: String,
       required: true

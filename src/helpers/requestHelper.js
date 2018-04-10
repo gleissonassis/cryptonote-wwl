@@ -26,7 +26,10 @@ module.exports = function(dependencies) {
         function (error, response, body) {
           if (error) {
             logger.error('[RequestHelper] An error has ocurred while getting ', url, headers, error, body);
-            reject(body);
+            reject({
+              status: 500,
+              error: error.code
+            });
           } else {
             logger.info('[RequestHelper] Get has been performed successfully ', url, headers, body);
             resolve(body);
@@ -56,7 +59,10 @@ module.exports = function(dependencies) {
         function (error, response, body) {
           if (error) {
             logger.error('[RequestHelper] An error has ocurred while posting to ', url, headers, data, error, body);
-            reject(body);
+            reject({
+              status: 500,
+              error: error.code
+            });
           } else {
             var status = allwedStatus || [];
 
@@ -70,6 +76,7 @@ module.exports = function(dependencies) {
               resolve(body);
             } else {
               logger.error('[RequestHelper] The HTTP status is not accepted as success');
+              delete body.details;
               reject(body);
             }
           }

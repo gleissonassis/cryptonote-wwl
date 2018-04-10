@@ -7,6 +7,7 @@ module.exports = function() {
   return {
     getAll: function(req, res) {
       var rh = new HTTPResponseHelper(req, res);
+      var chain = Promise.resolve();
 
       var filter = {};
 
@@ -29,7 +30,25 @@ module.exports = function() {
         filter.userId = req.currentUser.id;
       }
 
-      business.getAll(filter)
+      var sort = req.query.sort;
+      var pagination = {};
+
+      if (req.query.limit) {
+        pagination.limit = parseInt(req.query.limit);
+      }
+
+      if (req.query.offset && req.query.limit) {
+        pagination.skip = parseInt(req.query.offset) * pagination.limit;
+      }
+
+      chain
+        .then(function() {
+          return business.getTotalByFilter(filter);
+        })
+        .then(function(r) {
+          res.set('X-Total-Count', r);
+          return business.getAll(filter, pagination, sort);
+        })
         .then(rh.ok)
         .catch(rh.error);
     },

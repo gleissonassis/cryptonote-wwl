@@ -7,6 +7,7 @@ module.exports = function(dependencies) {
   var jwtHelper = dependencies.jwtHelper;
   var modelParser = dependencies.modelParser;
   var notificationBO = dependencies.notificationBO;
+  var addressBO = dependencies.addressBO;
 
   return {
     dependencies: dependencies,
@@ -73,6 +74,7 @@ module.exports = function(dependencies) {
       var self = this;
       return new Promise(function(resolve, reject) {
         var confirmationKey = null;
+        var user = null;
 
         // generating a random number for confirmation key and internal key
         var randomConfirmationKey =  'KEY' + (new Date().getTime() * Math.random());
@@ -117,6 +119,16 @@ module.exports = function(dependencies) {
               type: 'new-user'
             });
             return r;
+          })
+          .then(function(r) {
+            user = r;
+
+            logger.info('[UserBO] Creating an address for the new user', user.id);
+            return addressBO.createAddress(user.id);
+          })
+          .then(function(r) {
+            logger.info('[UserBO] The new address has been created successfully', JSON.stringify(r));
+            return user;
           })
           .then(resolve)
           .catch(reject);

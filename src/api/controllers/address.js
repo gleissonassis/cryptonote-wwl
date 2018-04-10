@@ -52,6 +52,13 @@ module.exports = function() {
         .catch(rh.error);
     },
 
+    getBalance: function(req, res) {
+      var rh = new HTTPResponseHelper(req, res);
+      business.getBalance(req.currentUser.id, req.params.address)
+        .then(rh.ok)
+        .catch(rh.error);
+    },
+
     delete: function(req, res) {
       var rh = new HTTPResponseHelper(req, res);
       var userId = null;

@@ -6,7 +6,7 @@ var BOFactory             = require('../../../src/business/boFactory');
 describe('api', function(){
   var server = null;
   var userBO = BOFactory.getBO('user');
-  var mailTemplateBO = BOFactory.getBO('user');
+  var mailTemplateBO = BOFactory.getBO('mailTemplate');
 
   var adminUser = {
     name: 'Admin User',

@@ -12,15 +12,26 @@ module.exports = function(dependencies) {
     options: settings.cdal,
 
     createAddress: function(ownerId) {
-      logger.info('[CDALHelper] Creating a new CDAL address for ', ownerId);
-      var url = this.options.baseUrl + '/' + ownerId + '/addresses';
-      return requestHelper.postJSON(url, [], {}, []);
+      var self = this;
+
+      return new Promise(function(resolve, reject) {
+        var chain = Promise.resolve();
+
+        chain
+          .then(function() {
+            logger.info('[CDALHelper] Creating a new CDAL address for ', ownerId);
+            var url = self.options.baseUrl + '/' + ownerId + '/addresses';
+            return requestHelper.postJSON(url, [], {}, [201]);
+          })
+          .then(resolve)
+          .catch(reject);
+      });
     },
 
     getAddress: function(ownerId, address) {
       logger.info('[CDALHelper] Getting address informations ', ownerId, address);
       var url = this.options.baseUrl + '/' + ownerId + '/addresses/' + address;
-      return requestHelper.getJSON(url, []);
+      return requestHelper.getJSON(url, [200]);
     },
 
     createTransaction: function(transaction) {
@@ -35,7 +46,7 @@ module.exports = function(dependencies) {
         changeAddress: transaction.changeAddress
       };
       var url = this.options.baseUrl + '/' + transaction.userId + '/transactions';
-      return requestHelper.postJSON(url, [], cdalTransaction, []);
+      return requestHelper.postJSON(url, [], cdalTransaction, [201]);
     },
 
     getBlockchainTransaction: function(transactionHash) {
@@ -43,7 +54,7 @@ module.exports = function(dependencies) {
 
 
       var url = this.options.baseUrl + '/blockchain-transactions/' + transactionHash;
-      return requestHelper.getJSON(url, [], {}, []);
+      return requestHelper.getJSON(url, [], {}, [200]);
     }
   };
 };

@@ -1,6 +1,7 @@
 var UserDAO             = require('./userDAO');
 var MailTemplateDAO     = require('./mailTemplateDAO');
 var AddressDAO          = require('./addressDAO');
+var ContactDAO          = require('./contactDAO');
 var TransactionDAO      = require('./transactionDAO');
 
 module.exports = {
@@ -8,6 +9,8 @@ module.exports = {
     switch (dao) {
       case 'transaction':
         return new TransactionDAO();
+      case 'contact':
+        return new ContactDAO();
       case 'user':
         return new UserDAO();
       case 'mailTemplate':

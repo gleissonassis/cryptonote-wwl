@@ -68,6 +68,48 @@ module.exports = function(dependencies) {
       });
     },
 
+    getBalance: function(userId, address) {
+      var self = this;
+
+      return new Promise(function(resolve, reject) {
+        var chain = Promise.resolve();
+
+        chain
+          .then(function() {
+            var filter = {
+              userId: userId
+            };
+
+            if (address) {
+              filter.address = address;
+            }
+
+            logger.info('[AddressBO] Getting all addresses to calculate the balance', JSON.stringify(filter));
+            return self.getAll(filter);
+          })
+          .then(function(r) {
+            var balance = {
+              available: 0,
+              locked: 0,
+              total: 0
+            };
+
+            for (var i = 0; i < r.length; i++) {
+              logger.info('[AddressBO] Adding the balance for the address', JSON.stringify(r[i]));
+              balance.available += r[i].balance.available;
+              balance.locked += r[i].balance.locked;
+            }
+
+            balance.total = balance.available + balance.locked;
+
+            logger.info('[AddressBO] Actual balance ', JSON.stringify(balance));
+            return balance;
+          })
+          .then(resolve)
+          .catch(reject);
+      });
+    },
+
     createAddress: function(userId) {
       var self = this;
 
@@ -160,7 +202,8 @@ module.exports = function(dependencies) {
             } else {
               throw {
                 status: 404,
-                message: 'Address ' + address + 'not found'
+                message: 'Address ' + address + ' not found',
+                error: 'ADDRESS_NOT_FOUND'
               };
             }
           })
@@ -174,8 +217,11 @@ module.exports = function(dependencies) {
 
       return new Promise(function(resolve, reject) {
         self.getByAddress(userId, address)
+          .then(function(r) {
+            return addressDAO.disable(r.id);
+          })
           .then(function() {
-            return addressDAO.disable(id);
+            return {};
           })
           .then(resolve)
           .catch(reject);

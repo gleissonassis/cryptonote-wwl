@@ -15,14 +15,23 @@ module.exports = function(dependencies) {
       return transactionDAO.clear();
     },
 
-    getAll: function(filter) {
+    getAll: function(filter, pagination, sort) {
       return new Promise(function(resolve, reject) {
         if (!filter) {
           filter = {};
         }
         filter.isEnabled = true;
-        logger.info('[TransactionBO] Listing all items by filter ', filter);
-        transactionDAO.getAll(filter)
+
+        if (!sort) {
+          sort = '-createdAt';
+        }
+
+        logger.info('[TransactionBO] Listing all items by filter ',
+          JSON.stringify(filter),
+          JSON.stringify(pagination),
+          JSON.stringify(sort));
+
+        transactionDAO.getAll(filter, pagination, sort)
           .then(function(r) {
             return r.map(function(item) {
               return modelParser.clear(item);
@@ -31,6 +40,15 @@ module.exports = function(dependencies) {
           .then(resolve)
           .catch(reject);
       });
+    },
+
+    getTotalByFilter: function(filter) {
+      if (!filter) {
+        filter = {};
+      }
+
+      logger.info('[TransactionBO] Getting the total of items by filter ', JSON.stringify(filter));
+      return transactionDAO.getTotalByFilter(filter);
     },
 
     getById: function(userId, id) {
@@ -92,6 +110,7 @@ module.exports = function(dependencies) {
 
       return new Promise(function(resolve, reject) {
         var chain = Promise.resolve();
+        var rTransaction = null;
 
         chain
           .then(function() {
@@ -102,6 +121,8 @@ module.exports = function(dependencies) {
           })
           .then(function() {
             transaction.status = 0;
+            //when you create a transaction from WWL it is outgoing
+            transaction.amount = -transaction.fee - transaction.to.amount;
             logger.info('[TransactionBO] Saving the new transaction at database', JSON.stringify(transaction));
             return self.save(transaction);
           })
@@ -120,6 +141,15 @@ module.exports = function(dependencies) {
             logger.info('[TransactionBO] Updating the transactionHash for the transaction',
               JSON.stringify(transaction));
             return self.update(transaction);
+          })
+          .then(function(r) {
+            rTransaction = r;
+
+            logger.info('[TransactionBO] Updating the address balance', r.userId, r.from);
+            return addressBO.updateBalance(r.userId, r.from);
+          })
+          .then(function() {
+            return rTransaction;
           })
           .then(resolve)
           .catch(reject);
@@ -186,22 +216,42 @@ module.exports = function(dependencies) {
       });
     },
 
-    getByTransactionHash: function(transactionHash) {
+    getByCDALTransaction: function(cdalTransaction) {
       var self = this;
       return new Promise(function(resolve, reject) {
         var chain = Promise.resolve();
 
         chain
           .then(function() {
-            logger.info('[TransactionBO] Getting the transaction by transactionHash', transactionHash);
-            return self.getAll({transactionHash: transactionHash});
+            logger.info('[TransactionBO] Getting the transaction by transactionHash and address',
+              cdalTransaction.transactionHash,
+              cdalTransaction.address);
+
+            var filter = {
+              transactionHash: cdalTransaction.transactionHash,
+              isEnabled: true,
+              userId: cdalTransaction.ownerId
+            };
+
+            if (cdalTransaction.amount < 0) {
+              filter.from = cdalTransaction.address;
+            } else {
+              filter['to.address']= cdalTransaction.address;
+            }
+
+            return self.getAll(filter);
           })
           .then(function(r) {
             if (r.length) {
-              logger.info('[TransactionBO] Transaction found by transactionHash', transactionHash);
+              logger.info('[TransactionBO] Transaction found by transactionHash and address',
+                cdalTransaction.transactionHash,
+                cdalTransaction.address);
               return r[0];
             } else {
-              logger.info('[TransactionBO] Transaction not found by transctionHash', transactionHash);
+              logger.info('[TransactionBO] Transaction not found by transctionHash',
+                cdalTransaction.transactionHash,
+                cdalTransaction.address);
+
               return null;
             }
           })
@@ -237,7 +287,8 @@ module.exports = function(dependencies) {
               to: {
                 address: cdalTransaction.address,
                 amount: cdalTransaction.amount
-              }
+              },
+              amount: cdalTransaction.amount
             };
 
             logger.info('[TransactionBO] Saving the new transaction parsed from CDAL transaction',
@@ -262,23 +313,32 @@ module.exports = function(dependencies) {
             if (!cdalTransaction.transactionHash) {
               throw {
                 status: 422,
-                message: 'The CDAL transaction must have an transactionHash attribute'
+                message: 'The CDAL transaction must have a transactionHash attribute'
+              };
+            }
+
+            if (!cdalTransaction.address) {
+              throw {
+                status: 422,
+                message: 'The CDAL transaction must have an address attribute'
               };
             }
           })
           .then(function() {
             logger.info('[TransactionBO] Trying to find a transaction by transactionHash',
-              cdalTransaction.transactionHash);
-            return self.getByTransactionHash(cdalTransaction.transactionHash);
+              cdalTransaction.transactionHash,
+              cdalTransaction.address);
+            return self.getByCDALTransaction(cdalTransaction);
           })
           .then(function(r) {
             if (r) {
-              logger.info('[Transaction] Transaction found by transactionHash',
-                cdalTransaction.transactionHash);
+              logger.info('[Transaction] Transaction found by transactionHash and address',
+                cdalTransaction.transactionHash, cdalTransaction.transactionHash);
               return r;
             } else {
-              logger.info('[Transaction] There is no transaction to the transactionHash',
-                cdalTransaction.transactionHash);
+              logger.info('[Transaction] There is no transaction to the transactionHash and address',
+                cdalTransaction.transactionHash,
+                cdalTransaction.address);
               return self.createTransactionFromCDAL(cdalTransaction);
             }
           })
@@ -299,7 +359,7 @@ module.exports = function(dependencies) {
             transaction = r;
             var p = [];
 
-            logger.info('[TransactionBO] Getting the address involved on this transaction to updated balance');
+            logger.info('[TransactionBO] Getting the addresses involved on this transaction to updated balance');
             p.push(addressBO.getAll({'address': r.from}));
             p.push(addressBO.getAll({'address': r.to.address}));
 
@@ -317,7 +377,7 @@ module.exports = function(dependencies) {
 
             return Promise.all(p);
           })
-          .then(function(r) {
+          .then(function() {
             return transaction;
           })
           .then(resolve)

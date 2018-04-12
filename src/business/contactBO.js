@@ -13,14 +13,34 @@ module.exports = function(dependencies) {
       return contactDAO.clear();
     },
 
-    getAll: function(filter) {
+    getTotalByFilter: function(filter) {
+      if (!filter) {
+        filter = {};
+      }
+
+      logger.info('[ContactBO] Getting the total of items by filter ', JSON.stringify(filter));
+      return contactDAO.getTotalByFilter(filter);
+    },
+
+
+    getAll: function(filter, pagination, sort) {
       return new Promise(function(resolve, reject) {
         if (!filter) {
           filter = {};
         }
         filter.isEnabled = true;
-        logger.info('[ContactDAO] Listing all items by filter ', JSON.stringify(filter));
-        contactDAO.getAll(filter)
+
+        if (!sort) {
+          sort = '-createdAt';
+        }
+
+        logger.info('[ContactBO] Listing all items by filter ',
+          JSON.stringify(filter),
+          JSON.stringify(pagination),
+          JSON.stringify(sort));
+
+        logger.info('[ContactBO] Listing all items by filter ', JSON.stringify(filter));
+        contactDAO.getAll(filter, pagination, sort)
           .then(function(r) {
             return r.map(function(item) {
               return modelParser.clear(item);

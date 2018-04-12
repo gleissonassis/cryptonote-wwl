@@ -17,6 +17,20 @@ module.exports = function(){
       type: String,
       required: true
     },
+    amount: {
+      type: Number,
+      required: false
+    },
+    extra: {
+      anonymity: {
+        type: Number,
+        required: false
+      },
+      paymentId: {
+        type: String,
+        required: false
+      }
+    },
     isEnabled: {
       type: Boolean,
       required: true

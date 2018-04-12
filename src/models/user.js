@@ -64,6 +64,10 @@ module.exports = function(){
     internalKey: {
       type: String,
       required: true
+    },
+    defaultCurrency: {
+      type: String,
+      required: false
     }
   });
 

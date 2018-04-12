@@ -24,11 +24,12 @@ module.exports = function() {
       });
     },
 
-    getAll: function(filter) {
+    getAll: function(filter, pagination, sort) {
       return new Promise(function(resolve, reject) {
         logger.info('[ContactDAO] Getting items from database', filter);
 
-        model.find(filter, projectionCommonFields)
+        model.find(filter, projectionCommonFields, pagination)
+          .sort(sort)
           .lean()
           .exec()
           .then(function(items) {
@@ -76,6 +77,20 @@ module.exports = function() {
             status: 422,
             message: error
           });
+        });
+      });
+    },
+
+    getTotalByFilter: function(filter) {
+      return new Promise(function(resolve, reject) {
+        logger.info('[ContactsDAO] Getting total items from database by filter', JSON.stringify(filter));
+        model.count(filter, function( err, count){
+          if (err) {
+            reject(err);
+          } else {
+            logger.info('[ContactsDAO] Total items from database ', count);
+            resolve(count);
+          }
         });
       });
     },

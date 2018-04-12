@@ -6,8 +6,32 @@ module.exports = function() {
 
   return {
     getAll: function(req, res) {
+      var chain = Promise.resolve();
       var rh = new HTTPResponseHelper(req, res);
-      business.getAll({})
+
+      var filter = {
+        userId: req.currentUser.id
+      };
+
+      var sort = req.query.sort;
+      var pagination = {};
+
+      if (req.query.limit) {
+        pagination.limit = parseInt(req.query.limit);
+      }
+
+      if (req.query.offset && req.query.limit) {
+        pagination.skip = parseInt(req.query.offset) * pagination.limit;
+      }
+
+      chain
+        .then(function() {
+          return business.getTotalByFilter(filter);
+        })
+        .then(function(r) {
+          res.set('X-Total-Count', r);
+          return business.getAll(filter, pagination, sort);
+        })
         .then(rh.ok)
         .catch(rh.error);
     },

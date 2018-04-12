@@ -2,7 +2,8 @@ var Promise       = require('promise');
 var logger        = require('../config/logger');
 var settings      = require('../config/settings');
 
-function SendMailHelper(nodemailer) {
+function SendMailHelper(dependencies) {
+  var nodemailer = dependencies.nodemailer;
   return {
     options: settings.mailOptions,
 

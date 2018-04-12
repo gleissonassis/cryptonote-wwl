@@ -17,17 +17,20 @@ module.exports = function() {
             {'$or': [{
               userId: req.currentUser.id,
               from: req.params.address,
-              isEnabled: true
+              isEnabled: true,
+              status: {'$gte': 1}
             },{
               userId: req.currentUser.id,
               'to.address': req.params.address,
-              isEnabled: true
+              isEnabled: true,
+              status: {'$gte': 1}
             }
             ]}
           ]
         };
       } else {
         filter.userId = req.currentUser.id;
+        filter.status = {'$gte': 1};
       }
 
       var sort = req.query.sort;

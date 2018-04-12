@@ -121,7 +121,7 @@ module.exports = function(dependencies) {
           })
           .then(function() {
             transaction.status = 0;
-            //when you create a transaction from WWL it is outgoing
+            //when a user creates a transaction from WWL it is always outgoing
             transaction.amount = -transaction.fee - transaction.to.amount;
             logger.info('[TransactionBO] Saving the new transaction at database', JSON.stringify(transaction));
             return self.save(transaction);

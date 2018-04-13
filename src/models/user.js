@@ -68,6 +68,10 @@ module.exports = function(){
     defaultCurrency: {
       type: String,
       required: false
+    },
+    language: {
+      type: String,
+      required: false
     }
   });
 

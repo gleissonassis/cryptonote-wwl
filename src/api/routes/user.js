@@ -1,5 +1,6 @@
 var ExpressHelper         = require('../../helpers/expressHelper');
 
+
 module.exports = function(app) {
   var expressHelper = new ExpressHelper();
   var controller = app.controllers.user;

@@ -6,6 +6,7 @@ module.exports = function() {
   var userHelper = new UserHelper();
   var business = BOFactory.getBO('user');
   var notificationBO = BOFactory.getBO('notification');
+  var alertBO = BOFactory.getBO('alert');
 
   return {
     getAll: function(req, res) {
@@ -79,12 +80,38 @@ module.exports = function() {
 
     auth: function(req, res) {
       var rh = new HTTPResponseHelper(req, res);
-      business.generateToken(req.body.email, req.body.password, {
+      var chain = Promise.resolve();
+      var user = null;
+      var info = {
         ip: req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress,
         userAgent: req.headers['user-agent']
-      })
+      };
+
+      chain
+        .then(function() {
+          return business.generateToken(req.body.email, req.body.password, info);
+        })
+        .then(function(r) {
+          user = r;
+
+          return alertBO.createLoginOkAlert(user.id, {email: req.body.email}, info);
+        })
+        .then(function() {
+          return user;
+        })
         .then(rh.ok)
-        .catch(rh.error);
+        .catch(function(error) {
+          //this promise will not part of this chain, it is just to notify
+          //the user a failed login
+          business.getByEmail(req.body.email)
+            .then(function(r) {
+              if (r) {
+                alertBO.createFailedLoginAlert(r.id, {email: req.body.email, error: error}, info);
+              }
+            });
+
+          rh.error(error);
+        });
     },
 
     getLoginHistory: function(req, res) {

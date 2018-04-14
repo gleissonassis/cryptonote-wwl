@@ -7,6 +7,7 @@ module.exports = function(dependencies) {
   var cdalHelper = dependencies.cdalHelper;
   var dateHelper = dependencies.dateHelper;
   var addressBO = dependencies.addressBO;
+  var alertBO = dependencies.alertBO;
 
   return {
     dependencies: dependencies,
@@ -295,6 +296,12 @@ module.exports = function(dependencies) {
               JSON.stringify(transaction));
             return self.save(transaction);
           })
+          .then(function(r) {
+            //this promise will not be part of this chain
+            logger.info('[TransactionBO] Creating a new alert to user about this new transaction', JSON.stringify(r));
+            alertBO.createNewTransactionAlert(r.userId, r);
+            return r;
+          })
           .then(resolve)
           .catch(reject);
       });
@@ -348,6 +355,10 @@ module.exports = function(dependencies) {
               logger.info('[TransactionBO] The transaction is confirmed the new status is 2',
                 cdalTransaction.isConfirmed);
               r.status = 2;
+
+              //this promise will not be part of this chain
+              logger.info('[TransactionBO] Creating a new alert to user about this new transaction', JSON.stringify(r));
+              alertBO.createTransactionConfirmedAlert(r.userId, r);
               return self.update(r);
             } else {
               logger.info('[TransactionBO] The CDAL transaction is not confirmed yet so nothing to do',

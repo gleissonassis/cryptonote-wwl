@@ -10,9 +10,13 @@ services:
     networks:
       - db
   services:
+    build:
+      context: .
+      args:
+        - VERSION=local
+    image: cryptonote-wwl:local
     volumes:
       - .:/app
-    build: .
     ports:
       - 5002:5000
     networks:

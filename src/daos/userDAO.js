@@ -8,7 +8,7 @@ module.exports = function() {
     password: false,
     __v: false,
     isEnabled: false,
-    loginHistory: false,
+    loginHistory: false
   };
 
   var projectionCommonFields = {
@@ -19,7 +19,8 @@ module.exports = function() {
     loginHistory: false,
     isEnabled: false,
     confirmation: false,
-    internalKey: false
+    internalKey: false,
+    twoFactorAuth: false
   };
 
   return {
@@ -233,6 +234,29 @@ module.exports = function() {
           resolve(item.toObject());
         }).catch(function(error) {
           logger.error('[UserDAO] An error has ocurred while updating this user login history', error);
+          reject({
+            status: 422,
+            message: error
+          });
+        });
+      });
+    },
+
+    configure2FAToken: function(isEnabled, userId, info) {
+      return new Promise(function(resolve, reject) {
+        logger.info('[UserDAO] Configuring 2FA tor the user ', userId, isEnabled, JSON.stringify(info));
+
+        model.update({_id: userId}, $.flatten({
+          'twoFactorAuth.isEnabled': isEnabled,
+          'twoFactorAuth.updatedAt': new Date(),
+          'twoFactorAuth.info': info,
+          updatedAt: new Date()
+        }))
+        .then(function() {
+          logger.info('[AlertDAO] 2FA isEnabled has been updated succesfully');
+          resolve();
+        }).catch(function(error) {
+          logger.error('[AlertDAO] An error has ocurred while updating 2FA isEnabled flag', error);
           reject({
             status: 422,
             message: error

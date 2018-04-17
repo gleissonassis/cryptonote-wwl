@@ -43,7 +43,9 @@
     "morgan": "^1.8.2",
     "nodemailer": "^4.4.2",
     "promise": "^8.0.1",
+    "qrcode": "^1.2.0",
     "request": "^2.83.0",
+    "speakeasy": "^2.0.0",
     "supertest": "^3.0.0",
     "winston": "^2.3.1"
   }

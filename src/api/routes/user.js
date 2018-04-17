@@ -13,6 +13,10 @@ module.exports = function(app) {
     .put(expressHelper.requireLogin, controller.updateMe)
     .get(expressHelper.requireLogin, controller.getMe);
 
+  app.route('/v1/users/me/2fa-token')
+    .get(expressHelper.requireLogin, controller.generate2FAToken)
+    .post(expressHelper.requireLogin, controller.configure2FAToken);
+
   app.route('/v1/users/auth')
     .post(controller.auth);
 

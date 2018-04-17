@@ -21,5 +21,9 @@ module.exports = {
     },
     cdal: {
       baseUrl: 'http://localhost:4000/v1'
+    },
+    twoFactorAuth: {
+      name: 'NBR Wallet',
+      issuer: 'Nióbio Cash'
     }
 };

@@ -8,6 +8,8 @@ var AlertBO               = require('./alertBO');
 var DAOFactory            = require('../daos/daoFactory');
 var ModelParser           = require('../models/modelParser');
 var HelperFactory         = require('../helpers/helperFactory');
+var speakeasy             = require('speakeasy');
+var QRCode                = require('qrcode');
 
 function factory(bo) {
   switch (bo) {
@@ -67,7 +69,10 @@ function factory(bo) {
         jwtHelper: HelperFactory.getHelper('jwt'),
         modelParser: new ModelParser(),
         notificationBO: factory('notification'),
-        addressBO: factory('address')
+        addressBO: factory('address'),
+        dateHelper: HelperFactory.getHelper('date'),
+        speakeasy: speakeasy,
+        qrCode: QRCode
       });
     default:
       return null;

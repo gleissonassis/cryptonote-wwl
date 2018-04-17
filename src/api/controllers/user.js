@@ -25,7 +25,7 @@ module.exports = function() {
 
       business.save(req.body)
         .then(function() {
-          return business.generateToken(req.body.email, req.body.password, {
+          return business.generateToken(req.body.email, req.body.password, null, {
             ip: req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress,
             userAgent: req.headers['user-agent']
           });
@@ -89,7 +89,7 @@ module.exports = function() {
 
       chain
         .then(function() {
-          return business.generateToken(req.body.email, req.body.password, info);
+          return business.generateToken(req.body.email, req.body.password, req.body.twoFactorAuthToken, info);
         })
         .then(function(r) {
           user = r;
@@ -156,6 +156,24 @@ module.exports = function() {
       business.generateNewToken(req.currentUser)
         .then(rh.ok)
         .catch(rh.error);
-    }
+    },
+
+    generate2FAToken: function(req, res) {
+      var rh = new HTTPResponseHelper(req, res);
+      business.get2FAToken(req.currentUser.id, req.body.name)
+        .then(rh.ok)
+        .catch(rh.error);
+    },
+
+    configure2FAToken: function(req, res) {
+      var rh = new HTTPResponseHelper(req, res);
+      var info = {
+        ip: req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent']
+      };
+      business.configure2FAToken(req.body.action === 'enable', req.currentUser.id, req.body.twoFactorAuthToken, info)
+        .then(rh.ok)
+        .catch(rh.error);
+    },
   };
 };

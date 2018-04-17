@@ -72,6 +72,36 @@ module.exports = function(){
     language: {
       type: String,
       required: false
+    },
+    twoFactorAuth: {
+      secret: {
+        type: Object,
+        required: false,
+      },
+      dataUrl: {
+        type: String,
+        required: false
+      },
+      isEnabled: {
+        type: Boolean,
+        required: false
+      },
+      createdAt: {
+        type: Date,
+        required: false
+      },
+      updatedAt: {
+        type: Date,
+        required: false
+      },
+      info: {
+        ip: {
+          type: String,
+        },
+        userAgent: {
+          type: String,
+        }
+      }
     }
   });
 

@@ -20,6 +20,6 @@ module.exports = {
       }
     },
     cdal: {
-      baseUrl: 'http://localhost:4000/v1'
+      baseUrl: util.format('http://%s/v1', process.env.CDAL_ADDRESS || 'localhost:4000')
     }
 };

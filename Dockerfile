@@ -1,17 +1,22 @@
-FROM alpine
+FROM node:9-alpine
 
-RUN apk update && \
-    apk add nodejs && \
-    apk add nodejs-npm && \
-    mkdir /app && \
+ARG VERSION=master
+ENV VERSION=${VERSION}
+
+LABEL maintainer="gleisson.assis@gmail.com"
+LABEL source="https://github.com/gleissonassis/cryptonote-wwl.git"
+LABEL version="${VERSION}"
+
+COPY process.yml LICENSE package.json /app/
+COPY src /app/src
+
+RUN npm install -g pm2 \
+ && pm2 install pm2-logrotate \
+ && pm2 set pm2-logrotate:retain 10 \
+ && cd /app \
+ && npm install --production \
+ && mkdir -p /app/log
 
 WORKDIR /app
 
-COPY . .
-
-RUN npm i && \
-    chmod +x start.sh
-
-EXPOSE 5000
-
-CMD ["/app/start.sh"]
+CMD ["pm2-docker", "start", "/app/process.yml"]

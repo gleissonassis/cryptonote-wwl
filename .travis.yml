@@ -1,0 +1,34 @@
+sudo: 'required'
+language: node_js
+
+services:
+  - 'docker'
+
+node_js:
+  - '7'
+
+install:
+  - npm install
+
+script:
+#  - npm test test/unit
+  - if [[ "${TRAVIS_BRANCH,,}" == "master" ]]; then
+      make build -e NAMESPACE="${DOCKER_NAMESPACE}" ;
+    elif [[ "${TRAVIS_BRANCH,,}" == *"-rc"* ]]; then
+      make build -e NAMESPACE="${DOCKER_NAMESPACE}" -e TAG="rc" -e VERSION="${TRAVIS_BRANCH}" ;
+    else
+      make build -e NAMESPACE="${DOCKER_NAMESPACE}" -e TAG="${TRAVIS_BRANCH,,}" -e VERSION="${TRAVIS_BRANCH}" ;
+    fi
+
+after_success:
+  - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ;
+  - if [[ "${TRAVIS_BRANCH,,}" == "master" ]]; then
+      make push -e NAMESPACE="${DOCKER_NAMESPACE}" ;
+    elif [[ "${TRAVIS_BRANCH,,}" == *"-rc"* ]]; then
+      make push -e NAMESPACE="${DOCKER_NAMESPACE}" -e TAG="rc" ;
+    else
+      make push -e NAMESPACE="${DOCKER_NAMESPACE}" -e TAG="${TRAVIS_BRANCH,,}" ;
+    fi
+
+notifications:
+  email: false

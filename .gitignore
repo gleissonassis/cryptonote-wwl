@@ -65,4 +65,6 @@ coverage
 *.private.js
 .DS_Store
 package-lock.json
+coverage.json
 data
+log

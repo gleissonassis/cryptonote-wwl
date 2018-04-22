@@ -11,12 +11,12 @@ module.exports = {
       expiresIn: '1h'
     },
     mailOptions: {
-      host: 'host',
-      port: 465,
-      secure: true,
+      host: process.env.MAIL_HOST || 'host',
+      port: process.env.MAIL_PORT || 465,
+      secure: process.env.MAIL_SECURE || true,
       auth: {
-          user: 'user',
-          pass: 'pass'
+          user: process.env.MAIL_USERNAME || 'user',
+          pass: process.env.MAIL_PASSWORD || 'pass'
       }
     },
     cdal: {

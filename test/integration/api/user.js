@@ -304,7 +304,7 @@ describe('api', function(){
             .get('/v1/users')
             .set('Accept', 'application/json')
             .set('Authorization', 'Bearer ' + token)
-            .expect(404);
+            .expect(200);
         });
     });
   });

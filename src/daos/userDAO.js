@@ -70,6 +70,20 @@ module.exports = function() {
       });
     },
 
+    getTotalByFilter: function(filter) {
+      return new Promise(function(resolve, reject) {
+        logger.info('[UserDAO] Getting total items from database by filter', JSON.stringify(filter));
+        model.count(filter, function( err, count){
+          if (err) {
+            reject(err);
+          } else {
+            logger.info('[UserDAO] Total items from database ', count);
+            resolve(count);
+          }
+        });
+      });
+    },
+
     save: function(entity) {
       var self = this;
       return new Promise(function(resolve, reject) {

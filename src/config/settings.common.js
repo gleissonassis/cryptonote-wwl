@@ -25,5 +25,6 @@ module.exports = {
     twoFactorAuth: {
       name: 'NBR Wallet',
       issuer: 'Nióbio Cash'
-    }
+    },
+    maximumUsers: 64
 };

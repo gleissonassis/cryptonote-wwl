@@ -50,7 +50,7 @@ describe('api', function(){
       })
       .then(function(r) {
         adminUser.id = r.id;
-        return userBO.generateToken(adminUser.email, adminUser.password, connectionInfo);
+        return userBO.generateToken(adminUser.email, adminUser.password, null, connectionInfo);
       })
       .then(function(r) {
         adminUser.token = r.token;
@@ -58,7 +58,7 @@ describe('api', function(){
       })
       .then(function(r) {
         user.id = r.id;
-        return userBO.generateToken(user.email, user.password, connectionInfo);
+        return userBO.generateToken(user.email, user.password, null, connectionInfo);
       })
       .then(function(r) {
         user.token = r.token;
@@ -119,7 +119,7 @@ describe('api', function(){
         .set('Accept', 'application/json')
         .set('Authorization', 'Bearer ' + adminUser.token)
         .expect('Content-Type', /json/)
-        .expect(404);
+        .expect(200);
     });
 
     it('should store a new mail template', function() {

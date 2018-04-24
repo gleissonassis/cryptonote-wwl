@@ -79,6 +79,7 @@ module.exports = function(dependencies) {
       return new Promise(function(resolve, reject) {
         var confirmationKey = null;
         var user = null;
+        var chain = Promise.resolve();
 
         // generating a random number for confirmation key and internal key
         var randomConfirmationKey =  'KEY' + (new Date().getTime() * Math.random());
@@ -87,7 +88,20 @@ module.exports = function(dependencies) {
                      randomConfirmationKey,
                      randomInternalKey);
 
-        self.getByEmail(entity.email)
+        chain
+          .then(function() {
+            return userDAO.getTotalByFilter();
+          })
+          .then(function(r) {
+            if (r >= settings.maximumUsers) {
+              throw {
+                status: 409,
+                error: 'MAXIMUM_USERS_EXCEEDED'
+              };
+            } else {
+              return self.getByEmail(entity.email);
+            }
+          })
           .then(function(user) {
             if (!user) {
               logger.debug('[UserBO] Saving the new user. Entity: ', JSON.stringify(entity));

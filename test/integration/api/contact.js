@@ -37,7 +37,7 @@ describe('api', function(){
       })
       .then(function(r) {
         user.id = r.id;
-        return userBO.generateToken(user.email, user.password, connectionInfo);
+        return userBO.generateToken(user.email, user.password, null, connectionInfo);
       })
       .then(function(r) {
         user.token = r.token;

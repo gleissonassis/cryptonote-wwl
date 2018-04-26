@@ -490,10 +490,6 @@ module.exports = function(dependencies) {
               return self.generate2FAToken(user);
             }
           })
-          .then(function(r) {
-            delete r.secret;
-            return r;
-          })
           .then(resolve)
           .catch(reject);
       });
